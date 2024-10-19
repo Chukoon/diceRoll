@@ -1,12 +1,12 @@
-import { _decorator, Component, Node, RigidBody, Vec3, randomRange } from 'cc';
+import { _decorator, Component, Node, RigidBody, Vec3, randomRange, Quat } from 'cc';
 const { ccclass, property } = _decorator;
 
-@ccclass('DiceController')
-export class DiceController extends Component {
+@ccclass('diceController')
+export class diceController extends Component {
 
     private rdBody: RigidBody | null = null;
-    private veloThres: number = 0.1;
-    private aVeloThres: number = 0.1;
+    private veloThres: number = 0.2;
+    private aVeloThres: number = 0.2;
     private isRolling: boolean = false;
 
     @property
@@ -21,28 +21,40 @@ export class DiceController extends Component {
     @property
     private maxTorque: number = 4;
 
+    private faceDirections: Vec3[] = [
+        new Vec3(0, 1, 0),   // 1 (上面)
+        new Vec3(0, 0, 1),   // 2 (z 正方向)
+        new Vec3(1, 0, 0),   // 3 (x 正方向)
+        new Vec3(-1, 0, 0),  // 4 (x 负方向)
+        new Vec3(0, 0, -1),  // 5 (z 负方向)
+        new Vec3(0, -1, 0)   // 6 (下面)
+    ];
+
     public roll() {
         if (!this.rdBody || this.isRolling) return;
-        
+
         this.isRolling = true;
 
         this.rdBody.setLinearVelocity(Vec3.ZERO);
         this.rdBody.setAngularVelocity(Vec3.ZERO);
 
-        const upwardForce = new Vec3(0, randomRange(this.minForce, this.maxForce), 0);
+        let forceRatio = 100;
+        const upwardForce = new Vec3(0, randomRange(this.minForce * forceRatio, this.maxForce * forceRatio), 0);
         this.rdBody.applyForce(upwardForce);
 
+
         const horizontalForce = new Vec3(
-            randomRange(-this.maxForce/2, this.maxForce/2),
+            randomRange(-this.maxForce * forceRatio / 2, this.maxForce * forceRatio / 2),
             0,
-            randomRange(-this.maxForce/2, this.maxForce/2)
+            randomRange(-this.maxForce * forceRatio / 2, this.maxForce * forceRatio / 2)
         );
         this.rdBody.applyForce(horizontalForce);
 
+
         const torque = new Vec3(
-            randomRange(-this.maxTorque, this.maxTorque),
-            randomRange(-this.maxTorque, this.maxTorque),
-            randomRange(-this.maxTorque, this.maxTorque)
+            randomRange(-this.maxTorque * forceRatio, this.maxTorque * forceRatio),
+            randomRange(-this.maxTorque * forceRatio, this.maxTorque * forceRatio),
+            randomRange(-this.maxTorque * forceRatio, this.maxTorque * forceRatio)
         );
         this.rdBody.applyTorque(torque);
     }
@@ -66,22 +78,23 @@ export class DiceController extends Component {
     public determineFaceUp(): number {
         if (!this.node) return 0;
 
-        const upDirection = this.node.up;
-        const faces = [new Vec3(1, 0, 0), new Vec3(0, 1, 0), new Vec3(0, 0, 1),
-        new Vec3(-1, 0, 0), new Vec3(0, -1, 0), new Vec3(0, 0, -1)
-        ];
+        const worldUp = new Vec3(0, 1, 0);
+        const diceRotation = new Quat();
+        this.node.getWorldRotation(diceRotation);
 
         let maxDot = -1;
         let faceUp = 0;
 
-        faces.forEach((face, index) => {
-            const dot = Vec3.dot(face, upDirection);
-            if(dot > maxDot)
-            {
+        this.faceDirections.forEach((faceDir, index) => {
+            // 将面的方向从本地空间转换到世界空间
+            const worldFaceDir = Vec3.transformQuat(new Vec3(), faceDir, diceRotation);
+            
+            const dot = Vec3.dot(worldFaceDir, worldUp);
+            if (dot > maxDot) {
                 maxDot = dot;
                 faceUp = index + 1;
             }
-        })
+        });
 
         return faceUp;
     }

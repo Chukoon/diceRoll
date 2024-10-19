@@ -1,8 +1,9 @@
 import { _decorator, Component, Node, RigidBody, Vec3, randomRange, Quat } from 'cc';
 const { ccclass, property } = _decorator;
 
-@ccclass('diceController')
-export class diceController extends Component {
+
+@ccclass('DiceController')
+export class DiceController extends Component {
 
     private rdBody: RigidBody | null = null;
     private veloThres: number = 0.2;

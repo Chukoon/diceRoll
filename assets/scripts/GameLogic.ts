@@ -1,11 +1,12 @@
 import { _decorator, Component, instantiate, Node, Prefab, Vec3, input, Input, KeyCode, Label, find } from 'cc';
-import { diceController } from './diceController';
+import { DiceController } from './DiceController';
 import { dicePoints } from './UI/dicePoints';
+
 
 const { ccclass, property, integer } = _decorator;
 
-@ccclass('gameLogic')
-export class gameLogic extends Component {
+@ccclass('GameLogic')
+export class GameLogic extends Component {
 
     @property(Prefab)
     dicePrefab?: Prefab = null;
@@ -16,7 +17,7 @@ export class gameLogic extends Component {
     @property(dicePoints)
     pointsLabel? : dicePoints = null;
 
-    private dices: diceController[] = [];
+    private dices: DiceController[] = [];
     private isRolling: boolean = false;
 
 
@@ -48,7 +49,7 @@ export class gameLogic extends Component {
             const randomRotZ = Math.random() * 360;
             diceNode.setRotationFromEuler(randomRotX, randomRotY, randomRotZ);
             
-            const dice = diceNode.getComponent(diceController);
+            const dice = diceNode.getComponent(DiceController);
             if(dice)
             {
                 this.dices.push(dice);
@@ -58,7 +59,7 @@ export class gameLogic extends Component {
 
     onLoad() {
         input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
-        this.dices = this.getComponentsInChildren(diceController);
+        this.dices = this.getComponentsInChildren(DiceController);
         console.log(this.pointsLabel)
     }
 

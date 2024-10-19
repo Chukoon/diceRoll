@@ -6,8 +6,8 @@ const { ccclass, property } = _decorator;
 export class DiceController extends Component {
 
     private rdBody: RigidBody | null = null;
-    private veloThres: number = 0.2;
-    private aVeloThres: number = 0.2;
+    private veloThres: number = 0.3;
+    private aVeloThres: number = 0.3;
     private isRolling: boolean = false;
 
     @property

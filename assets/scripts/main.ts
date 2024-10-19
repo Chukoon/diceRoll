@@ -1,12 +1,12 @@
 import { _decorator, Component, Node } from 'cc';
-import { gameLogic } from './gameLogic';
+import { GameLogic } from './GameLogic';
 
 const { ccclass, property } = _decorator;
 
 @ccclass('main')
 export class main extends Component {
-    @property(gameLogic)
-    private gameLogic: gameLogic | null = null;
+    @property(GameLogic)
+    private gameLogic: GameLogic | null = null;
 
     start() {
         // 游戏初始化逻辑

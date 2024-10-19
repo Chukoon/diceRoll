@@ -15,7 +15,10 @@ export class GameLogic extends Component {
     diceCount?: number = 5;
 
     @property(dicePoints)
-    pointsLabel? : dicePoints = null;
+    pointsLabel?: dicePoints = null;
+
+    @property(Node)
+    rollButton: Node = null;
 
     private dices: DiceController[] = [];
     private isRolling: boolean = false;
@@ -26,32 +29,29 @@ export class GameLogic extends Component {
     }
 
     private initDices() {
-        if(!this.dicePrefab)
-        {
+        if (!this.dicePrefab) {
             console.error("Dice prefab is not set!");
             return;
         }
 
-        for(let i = 0; i < this.diceCount; i++)
-        {
+        for (let i = 0; i < this.diceCount; i++) {
             const diceNode = instantiate(this.dicePrefab);
             this.node.addChild(diceNode);
-            
+
             // Generate random position within a 5x5x5 space
             const randomX = Math.random() * 5 - 2.5;
             const randomY = Math.random() * 5;
             const randomZ = Math.random() * 5 - 2.5;
             diceNode.setPosition(new Vec3(randomX, randomY, randomZ));
-            
+
             // Generate random rotation
             const randomRotX = Math.random() * 360;
             const randomRotY = Math.random() * 360;
             const randomRotZ = Math.random() * 360;
             diceNode.setRotationFromEuler(randomRotX, randomRotY, randomRotZ);
-            
+
             const dice = diceNode.getComponent(DiceController);
-            if(dice)
-            {
+            if (dice) {
                 this.dices.push(dice);
             }
         }
@@ -77,6 +77,7 @@ export class GameLogic extends Component {
         if (this.isRolling) return;
 
         this.isRolling = true;
+        this.rollButton.active = false;
         this.dices.forEach(dice => dice.roll());
         this.schedule(this.checkAllDiceStopped, 0.1);
     }
@@ -91,10 +92,9 @@ export class GameLogic extends Component {
     }
 
     private onAllDiceStopped() {
-        console.log('All dice have stopped rolling');
         const results = this.dices.map(dice => dice.determineFaceUp());
-        console.log('Results:', results.sort());
         // 在这里你可以添加更多的逻辑，比如更新UI显示结果等
         this.pointsLabel.setText('点数为：' + results);
+        this.rollButton.active = true;
     }
 }

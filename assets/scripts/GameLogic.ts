@@ -1,4 +1,5 @@
-import { _decorator, Component, instantiate, Node, Prefab, Vec3, input, Input, KeyCode, Label, find } from 'cc';
+import { _decorator, Component, instantiate, Node, Prefab, Vec3, input, Input, KeyCode, Label, find, assetManager, resources } from 'cc';
+import { AudioController } from './AudioController';
 import { DiceController } from './DiceController';
 import { dicePoints } from './UI/dicePoints';
 
@@ -8,8 +9,6 @@ const { ccclass, property, integer } = _decorator;
 @ccclass('GameLogic')
 export class GameLogic extends Component {
 
-    @property(Prefab)
-    dicePrefab?: Prefab = null;
 
     @integer
     diceCount?: number = 5;
@@ -22,20 +21,32 @@ export class GameLogic extends Component {
 
     private dices: DiceController[] = [];
     private isRolling: boolean = false;
-
+    private rollAudio: AudioController = null;
 
     public init() {
-        this.initDices();
+        this.loadDicePrefab();
+        this.loadRollAudio();
     }
 
-    private initDices() {
-        if (!this.dicePrefab) {
-            console.error("Dice prefab is not set!");
-            return;
-        }
+    private loadRollAudio() {
+        this.addComponent(AudioController);
+        this.rollAudio = this.getComponent(AudioController);
+    }
 
+    private loadDicePrefab() {
+        resources.load('prefabs/dice-regular', Prefab, (err, prefab) => {
+            if (err) {
+                console.log('load dice prefab error');
+                console.error(err);
+                return;
+            }
+            this.initDices(prefab);
+        });
+    }
+
+    private initDices(dicePrefab: Prefab) {
         for (let i = 0; i < this.diceCount; i++) {
-            const diceNode = instantiate(this.dicePrefab);
+            const diceNode = instantiate(dicePrefab);
             this.node.addChild(diceNode);
 
             // Generate random position within a 5x5x5 space
@@ -59,8 +70,6 @@ export class GameLogic extends Component {
 
     onLoad() {
         input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
-        this.dices = this.getComponentsInChildren(DiceController);
-        console.log(this.pointsLabel)
     }
 
     onDestroy() {
@@ -76,6 +85,7 @@ export class GameLogic extends Component {
     public rollAllDice() {
         if (this.isRolling) return;
 
+        this.rollAudio.playOnShot();
         this.isRolling = true;
         this.rollButton.active = false;
         this.dices.forEach(dice => dice.roll());

@@ -1,5 +1,6 @@
 import { _decorator, Component, Node } from 'cc';
 import { GameLogic } from './GameLogic';
+import { uiManager } from "./framework/uiManager";
 
 const { ccclass, property } = _decorator;
 
@@ -10,11 +11,14 @@ export class main extends Component {
 
     start() {
         // 游戏初始化逻辑
-        if (this.gameLogic) 
-        {
-            this.gameLogic.init();
-        }
+        GameLogic.init();
+        this.showMainUI();
     }
 
     // 添加其他全局控制方法
+
+    showMainUI()
+    {
+        uiManager.instance.showDialog('main/mainUI')
+    }
 }

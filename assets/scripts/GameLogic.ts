@@ -1,14 +1,14 @@
-import { _decorator, Component, instantiate, Node, Prefab, Vec3, input, Input, KeyCode, Label, find, assetManager, resources } from 'cc';
+import { _decorator, Component, instantiate, Node, Prefab, Vec3, input, Input, KeyCode, Label, find, assetManager, resources, EventTarget } from 'cc';
 import { AudioController } from './AudioController';
 import { DiceController } from './DiceController';
 import { dicePoints } from './UI/dicePoints';
+export const eventTarget = new EventTarget();
 
 
 const { ccclass, property, integer } = _decorator;
 
 @ccclass('GameLogic')
 export class GameLogic extends Component {
-
 
     @integer
     diceCount?: number = 5;
@@ -25,9 +25,22 @@ export class GameLogic extends Component {
 
     private dicePrefabName: string = null;
 
-    public init() {
-        this.loadDicePrefab();
-        this.loadRollAudio();
+    private static instance: GameLogic = null;
+
+    public static rollAllDice() {
+        if (!GameLogic.instance || GameLogic.instance.isRolling) return;
+
+        const instance = GameLogic.instance;
+        instance.rollAudio.playOnShot();
+        instance.isRolling = true;
+        instance.rollButton.active = false;
+        instance.dices.forEach(dice => dice.roll());
+        instance.schedule(instance.checkAllDiceStopped, 0.1);
+    }
+
+    public static init() {
+        GameLogic.instance.loadDicePrefab();
+        GameLogic.instance.loadRollAudio();
     }
 
     private loadRollAudio() {
@@ -71,28 +84,22 @@ export class GameLogic extends Component {
     }
 
     onLoad() {
+        GameLogic.instance = this;
         input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
     }
 
     onDestroy() {
+        GameLogic.instance = null;
         input.off(Input.EventType.KEY_DOWN, this.onKeyDown, this);
     }
 
     private onKeyDown(event: any) {
         if (event.keyCode === KeyCode.SPACE) {
-            this.rollAllDice();
+            GameLogic.rollAllDice();
         }
     }
 
-    public rollAllDice() {
-        if (this.isRolling) return;
 
-        this.rollAudio.playOnShot();
-        this.isRolling = true;
-        this.rollButton.active = false;
-        this.dices.forEach(dice => dice.roll());
-        this.schedule(this.checkAllDiceStopped, 0.1);
-    }
 
     private checkAllDiceStopped() {
         const allStopped = this.dices.every(dice => dice.checkIfStopped());
@@ -103,10 +110,20 @@ export class GameLogic extends Component {
         }
     }
 
-    private onAllDiceStopped() {
+    private onAllDiceStopped(): number[] {
         const results = this.dices.map(dice => dice.determineFaceUp()).sort();
-        // 在这里你可以添加更多的逻辑，比如更新UI显示结果等
-        this.pointsLabel.setText('点数为：' + results);
-        this.rollButton.active = true;
+        // 触发事件，传递结果
+        eventTarget.emit('diceRollComplete', results);
+        return results;
+    }
+
+    // 添加静态方法来监听事件
+    public static onDiceRollComplete(callback: (results: number[]) => void) {
+        eventTarget.on('diceRollComplete', callback);
+    }
+
+    // 添加静态方法来移除监听
+    public static offDiceRollComplete(callback: (results: number[]) => void) {
+        eventTarget.off('diceRollComplete', callback);
     }
 }

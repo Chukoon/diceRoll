@@ -23,6 +23,8 @@ export class GameLogic extends Component {
     private isRolling: boolean = false;
     private rollAudio: AudioController = null;
 
+    private dicePrefabName: string = null;
+
     public init() {
         this.loadDicePrefab();
         this.loadRollAudio();
@@ -34,7 +36,7 @@ export class GameLogic extends Component {
     }
 
     private loadDicePrefab() {
-        resources.load('prefabs/dice-regular', Prefab, (err, prefab) => {
+        resources.load('prefabs/dices/dice-regular-black', Prefab, (err, prefab) => {
             if (err) {
                 console.log('load dice prefab error');
                 console.error(err);
@@ -102,7 +104,7 @@ export class GameLogic extends Component {
     }
 
     private onAllDiceStopped() {
-        const results = this.dices.map(dice => dice.determineFaceUp());
+        const results = this.dices.map(dice => dice.determineFaceUp()).sort();
         // 在这里你可以添加更多的逻辑，比如更新UI显示结果等
         this.pointsLabel.setText('点数为：' + results);
         this.rollButton.active = true;

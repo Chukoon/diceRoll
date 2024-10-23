@@ -1,7 +1,7 @@
 [
   {
     "__type__": "cc.Prefab",
-    "_name": "dice-regular",
+    "_name": "dice-regular-white",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_native": "",
@@ -13,7 +13,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "dice-regular",
+    "_name": "dice-regular-white",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": null,
@@ -55,7 +55,7 @@
       "y": 0.5,
       "z": 0.5
     },
-    "_mobility": 0,
+    "_mobility": 2,
     "_layer": 1073741824,
     "_euler": {
       "__type__": "cc.Vec3",
@@ -95,8 +95,8 @@
       "__uuid__": "5d0ed11f-96f9-4fc0-80d1-3e45018eb580@e2349",
       "__expectedType__": "cc.Mesh"
     },
-    "_shadowCastingMode": 0,
-    "_shadowReceivingMode": 1,
+    "_shadowCastingMode": 1,
+    "_shadowReceivingMode": 0,
     "_shadowBias": 0,
     "_shadowNormalBias": 0,
     "_reflectionProbeId": -1,
